@@ -8,7 +8,7 @@ arquivo_csv = "dadoszip.csv"
 
 with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
-    writer.writerow(['Nome', 'Cidade de Nascimento', 'Nome em citações bibliográficas', 'Nome da instituição', 'Endereço profissional da instituição', 'Cep', 'Cidade', 'DDD', 'Telefone profissional', 'Nome do Curso de graduação', 'Nome da instituição', 'Ano de Início', 'Ano de conclusão'])
+    writer.writerow(['Data Da Ultima Atuaçização','Numero Identificador','Nome', 'Cidade de Nascimento', 'Nome em citações bibliográficas', 'Nome da instituição', 'Endereço profissional da instituição', 'Cep', 'Cidade', 'DDD', 'Telefone profissional', 'Nome do Curso de graduação', 'Nome da instituição', 'Ano de Início', 'Ano de conclusão'])
 
     for pasta, subpastas, arquivos in os.walk(pasta_raiz):
         for arquivo in arquivos:
@@ -22,6 +22,12 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
 
                             tree = ET.parse(xml_file)
                             root = tree.getroot()
+                            curriculo_vittae_element = root.find("./CURRICULO-VITAE")#atributos do curriculo-vitae não estão sendo lidos 
+                            if curriculo_vittae_element is not None:
+                                data_da_atualizacao = curriculo_vittae_element.attrib.get("DATA-ATUALIZACAO")
+                                numero_identificador = curriculo_vittae_element.attrib.get("NUMERO-IDENTIFICADOR")
+                            else:
+                                numero_identificador = data_da_atualizacao= "não foi achado teste "
                             dadosgerais_elemente = root.find("./DADOS-GERAIS")
                             if dadosgerais_elemente is not None:
                                 nome_completo = dadosgerais_elemente.attrib.get("NOME-COMPLETO")
@@ -51,7 +57,7 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                                 graduacao_nome_instituicao = graduacao_nome_curso = graduacao_ano_inicio = graduacao_ano_conclusao = None
 
 
-                            writer.writerow([nome_completo, cidade_nascimento, nome_citacao ,endereco_nome,endereco_logradouro,endereco_cep,endereco_cidade,endereco_telefone_ddd,endereco_telefone,graduacao_nome_curso,graduacao_nome_instituicao,graduacao_ano_inicio,graduacao_ano_conclusao])
+                            writer.writerow([data_da_atualizacao,numero_identificador,nome_completo, cidade_nascimento, nome_citacao ,endereco_nome,endereco_logradouro,endereco_cep,endereco_cidade,endereco_telefone_ddd,endereco_telefone,graduacao_nome_curso,graduacao_nome_instituicao,graduacao_ano_inicio,graduacao_ano_conclusao])
 
 print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo_csv}'.")
 '''
