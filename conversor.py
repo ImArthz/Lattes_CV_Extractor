@@ -127,4 +127,5 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo_csv}'.")
                                             (iniciação científica, Graduação, especialização,
                                             mestrado, doutorado, outra natureza) (Em andamento e concluídas).
 
+link github: https://github.com/ImArthz/Lattes_CV_Extractor
 '''
