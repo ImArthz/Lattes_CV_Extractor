@@ -8,7 +8,16 @@ arquivo_csv = "dadoszip.csv"
 
 with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
-    writer.writerow(['Numero Identificador','Nome', 'Cidade de Nascimento', 'Nome em citações bibliográficas', 'Nome da instituição', 'Endereço profissional da instituição', 'Cep', 'Cidade', 'DDD', 'Telefone profissional', 'Nome do Curso de graduação', 'Nome da instituição', 'Ano de Início', 'Ano de conclusão'])
+    writer.writerow(['Numero Identificador','Nome', 'Cidade de Nascimento', 
+                    'Nome em citações bibliográficas', 'Nome da instituição',
+                    'Endereço profissional da instituição', 'Cep', 'Cidade', 'DDD', 
+                    'Telefone profissional', 'Nome do Curso de graduação', 'Nome da instituição',
+                    'Ano de Início', 'Ano de conclusão','Mestrado Nome da instituiçao',
+                    'mestrado nome do curso','mestrado ano inicio','mestrado ano conclusão',
+                    'mestrado titulo da tese','doutorado nome da intituição','doutorado nome do curso',
+                    'doutado ano de inicio','doutorado ano de conlusao','doutorado titulo da tese'
+                    'formação complementar Nome do curso', 'formação complementar intituiçao'
+                    'formação complementar ano inicio','formação complementar ano de conclusão '])
 
     for pasta, subpastas, arquivos in os.walk(pasta_raiz):
         for arquivo in arquivos:
@@ -27,7 +36,7 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                             if dadosgerais_elemente is not None:
                                 nome_completo = dadosgerais_elemente.attrib.get("NOME-COMPLETO")
                                 cidade_nascimento = dadosgerais_elemente.attrib.get("CIDADE-NASCIMENTO")
-                                nome_citacao = dadosgerais_elemente.attrib.get("NOME-EM-CITACOES-BIBLIOGRAFICA")
+                                nome_citacao = dadosgerais_elemente.attrib.get("NOME-EM-CITACOES-BIBLIOGRAFICAS")
                             else:
                                 nome_completo = cidade_nascimento = nome_citacao = None
 
@@ -50,28 +59,65 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                                 graduacao_ano_conclusao = graduacao_element.attrib.get("ANO-DE-CONCLUSAO")
                             else:
                                 graduacao_nome_instituicao = graduacao_nome_curso = graduacao_ano_inicio = graduacao_ano_conclusao = None
+                            mestrado_elements = root.find("./DADOS-GERAIS/FORMACAO-ACADEMICA-TITULACAO/MESTRADO")
+                            if mestrado_elements is not None:
+                                mestrado_nome_instituicao = mestrado_elements.attrib.get("NOME-INSTITUICAO")
+                                mestrado_nome_curso = mestrado_elements.attrib.get("NOME-CURSO")
+                                mestrado_ano_inicio = mestrado_elements.attrib.get("ANO-DE-INICIO")
+                                mestrado_ano_conclusao = mestrado_elements.attrib.get("ANO-DE-CONCLUSAO")
+                                mestrado_titulo_tese = mestrado_elements.attrib.get("TITULO-DA-DISSERTACAO-TESE")
+                            else:    
+                                mestrado_nome_instituicao = mestrado_nome_curso = mestrado_ano_inicio = mestrado_ano_conclusao = mestrado_titulo_tese = None
+                            doutorado_elements = root.find("./DADOS-GERAIS/FORMACAO-ACADEMICA-TITULACAO/DOUTORADO")
+                            if doutorado_elements is not None :
+                                doutorado_nome_intituicao = doutorado_elements.attrib.get("NOME-INSTITUICAO")
+                                doutorado__nome_curso = doutorado_elements.attrib.get("NOME-CURSO")
+                                doutorado_ano_inicio = doutorado_elements.attrib.get("ANO-DE-INICIO")
+                                doutorado_ano_conclusao = doutorado_elements.attrib.get("ANO-DE-CONCLUSAO")
+                                doutorado_titulo_tese = doutorado_elements.attrib.get("TITULO-DA-DISSERTACAO-TESE")
+                            else:
+                                doutorado_nome_intituicao = doutorado__nome_curso = doutorado_ano_inicio = doutorado_ano_conclusao = doutorado_titulo_tese = None
+                            formacao_complementar_elements = root.find("./DADOS-COMPLEMENTARES/FORMACAO-COMPLEMENTAR/FORMACAO-COMPLEMENTAR-DE-EXTENSAO-UNIVERSITARIA")
+                            if formacao_complementar_elements is not None:
+                                formacaocompl_nome_curso =  formacao_complementar_elements.attrib.get("NOME-CURSO")
+                                formacaocompl_nome_intituicao = formacao_complementar_elements.attrib.get("NOME-INSTITUICAO")
+                                formacaocompl_ano_inicio = formacao_complementar_elements.attrib.get("ANO-DE-INICIO")
+                                formacaocompl_ano_conclusao = formacao_complementar_elements.attrib.get("ANO-DE-CONCLUSAO")
+                            else:
+                                formacaocompl_nome_curso = formacaocompl_nome_intituicao = formacaocompl_ano_inicio = formacaocompl_ano_conclusao = None # nem todos tem então fica nitido que tem muitos nones
 
 
-                            writer.writerow([numero_identificador,nome_completo, cidade_nascimento, nome_citacao ,endereco_nome,endereco_logradouro,endereco_cep,endereco_cidade,endereco_telefone_ddd,endereco_telefone,graduacao_nome_curso,graduacao_nome_instituicao,graduacao_ano_inicio,graduacao_ano_conclusao])
+                            writer.writerow([numero_identificador,nome_completo, cidade_nascimento,
+                                            nome_citacao ,endereco_nome,endereco_logradouro,endereco_cep,
+                                            endereco_cidade,endereco_telefone_ddd,endereco_telefone,
+                                            graduacao_nome_curso,graduacao_nome_instituicao,
+                                            graduacao_ano_inicio,graduacao_ano_conclusao,mestrado_nome_instituicao,
+                                            mestrado_nome_curso,mestrado_ano_inicio,mestrado_ano_conclusao,
+                                            mestrado_titulo_tese,doutorado_nome_intituicao,
+                                            doutorado__nome_curso,doutorado_ano_inicio,doutorado_ano_conclusao,
+                                            doutorado_titulo_tese,formacaocompl_nome_curso,
+                                            formacaocompl_nome_intituicao,formacaocompl_ano_inicio,
+                                            formacaocompl_ano_conclusao])
 
 print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo_csv}'.")
 '''
-    1
+    1 ( feito )
 
     inserir o numero indentificador que está nas primeiras linhas do xml 
 
         2
 
-        inserir os dados da graduação( que ja tem ) os  de curso técnico, os dados de especialização, de mestrado e de doutorado. 
-        Se tiver mais de um, pegar o primeiro registro que encontrar.
+        inserir os dados da graduação( que ja tem ) os  de curso técnico, os dados de especialização,
+        de mestrado e de doutorado. 
+        Se tiver mais de um, pegar o primeiro registro que encontrar.(feito porem checar os de curso tecnico por que a grande maioria aparentemente não tem)
 
             3
 
-            conferir os dados de citação por que talvez não esteja pegando 
+            conferir os dados de citação por que talvez não esteja pegando (feito estava puxando o nome da tag errado )
 
                 4
 
-                verificar a codificação dos acentos(não esta tratando talvez)
+                verificar a codificação dos acentos(não esta tratando talvez) [pelo oq verifiquei ta normal]
 
                     5
                     
