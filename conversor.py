@@ -7,6 +7,29 @@ pasta_raiz = r'C:\Users\Arthur\Desktop\pyp\collectionn'  # Define a pasta raiz o
 arquivo_csv = "dadoszip.csv"  # Define o nome do arquivo CSV que será criado
 arquivo2_csv = "informacoes.csv"  # Define o nome do segundo arquivo CSV que será criado
 arquivo3_csv = "idiomas.csv"  # Define o nome do terceiro arquivo CSV que será criado
+arquivo4_csv = "projetos.csv" #Define o nome do quarto arquivo CSV que será criado
+arquivo5_csv = "publicacoes.csv"  # Define o nome do quinto arquivo CSV que será criado
+
+def obter_ano(elemento):
+    if elemento is not None:
+        ano_elemento = elemento.attrib.get('ANO-DO-ARTIGO') or elemento.attrib.get('ANO') or elemento.attrib.get('ANO-DA-APRESENTACAO')
+        if ano_elemento is not None:
+            return ano_elemento.strip()
+    return ""
+
+def obter_ano_do_artigo(elemento):
+    if elemento is not None:
+        ano_artigo = elemento.find('DADOS-BASICOS-DO-ARTIGO').attrib.get('ANO-DO-ARTIGO')
+        if ano_artigo is not None:
+            return ano_artigo.strip()
+    return ""
+
+def obter_ano_da_apresentacao(elemento):
+    if elemento is not None:
+        ano_apresentacao = elemento.attrib.get('ANO-DA-APRESENTACAO')
+        if ano_apresentacao is not None:
+            return ano_apresentacao.strip()
+    return ""
 
 # Função auxiliar para obter o valor de um atributo de um elemento XML
 def get_attrib_value(element, attribute):
@@ -164,8 +187,7 @@ with open(arquivo2_csv, 'w', encoding='utf-8', newline='') as file:
 # Abre o arquivo CSV 'arquivo3_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
 with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
-    writer.writerow(['Identificador', 'Nome', 'Linhas de Pesquisa', 'Membros de Corpo Editorial', 'Revisores de Periódico', 'Revisores de Projeto de Fomento', 'Áreas de Atuação'])
-
+    writer.writerow(['Número Identificador', 'Nome', 'Idioma', 'Proficiência de Compreensão', 'Proficiência de Fala', 'Proficiência de Leitura', 'Proficiência de Escrita'])
     # Repete o processo de pesquisa de arquivos ZIP, extração de arquivos XML e processamento dos XMLs para gerar informações sobre idiomas
     for pasta, subpastas, arquivos in os.walk(pasta_raiz):
         for arquivo in arquivos:
@@ -200,9 +222,112 @@ with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo3_csv}'.")
 
+with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Número Identificador', 'Nome', 'Total de Projetos de Pesquisa',
+                    'Ano de Conclusão do Primeiro Projeto de Pesquisa', 'Ano de Conclusão do Último Projeto de Pesquisa',
+                    'Total de Projetos de Extensão', 'Ano de Conclusão do Primeiro Projeto de Extensão',
+                    'Ano de Conclusão do Último Projeto de Extensão',
+                    'Total de Projetos de Desenvolvimento', 'Ano de Conclusão do Primeiro Projeto de Desenvolvimento',
+                    'Ano de Conclusão do Último Projeto de Desenvolvimento'])
 
+    for pasta, subpastas, arquivos in os.walk(pasta_raiz):
+        for arquivo in arquivos:
+            if arquivo.endswith(".zip"):
+                arquivo_zip = os.path.join(pasta, arquivo)
 
+                with zipfile.ZipFile(arquivo_zip, 'r') as zf:
+                    for entry in zf.infolist():
+                        if entry.filename.endswith(".xml"):
+                            xml_file = zf.extract(entry, path=pasta)
+                            tree = ET.parse(xml_file)
+                            root = tree.getroot()
+                            numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
+                            nome_individuo = root.find('DADOS-GERAIS').attrib['NOME-COMPLETO']
 
+                            projetos_pesquisa = root.findall('.//PROJETO-DE-PESQUISA')
+                            projetos_extensao = root.findall('.//PROJETO-DE-EXTENSAO')
+                            projetos_desenvolvimento = root.findall('.//PROJETO-DE-DESENVOLVIMENTO')
+
+                            total_projetos_pesquisa = len(projetos_pesquisa)
+                            primeiro_projeto_pesquisa = projetos_pesquisa[0].attrib.get('ANO-FIM') if projetos_pesquisa else None
+                            ultimo_projeto_pesquisa = projetos_pesquisa[-1].attrib.get('ANO-FIM') if projetos_pesquisa else None
+
+                            total_projetos_extensao = len(projetos_extensao)
+                            primeiro_projeto_extensao = projetos_extensao[0].attrib.get('ANO-FIM') if projetos_extensao else None
+                            ultimo_projeto_extensao = projetos_extensao[-1].attrib.get('ANO-FIM') if projetos_extensao else None
+
+                            total_projetos_desenvolvimento = len(projetos_desenvolvimento)
+                            primeiro_projeto_desenvolvimento = projetos_desenvolvimento[0].attrib.get('ANO-FIM') if projetos_desenvolvimento else None
+                            ultimo_projeto_desenvolvimento = projetos_desenvolvimento[-1].attrib.get('ANO-FIM') if projetos_desenvolvimento else None
+
+                            writer.writerow([numero_identificador, nome_individuo, total_projetos_pesquisa,
+                                            primeiro_projeto_pesquisa, ultimo_projeto_pesquisa,
+                                            total_projetos_extensao, primeiro_projeto_extensao, ultimo_projeto_extensao,
+                                            total_projetos_desenvolvimento, primeiro_projeto_desenvolvimento, ultimo_projeto_desenvolvimento])
+
+    print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo4_csv}'.")
+with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Número Identificador', 'Nome', 'Artigos Completos em Periódicos', 'Ano do Primeiro Artigo', 'Ano do Último Artigo',
+                    'Livros Publicados/Organizados', 'Ano do Primeiro Livro', 'Ano do Último Livro',
+                    'Capítulos de Livros Publicados', 'Ano do Primeiro Capítulo', 'Ano do Último Capítulo',
+                    'Trabalhos Completos em Anais de Congressos', 'Ano do Primeiro Trabalho', 'Ano do Último Trabalho',
+                    'Resumos Expandidos em Anais de Congressos', 'Ano do Primeiro Resumo Expandido', 'Ano do Último Resumo Expandido',
+                    'Resumos em Anais de Congressos', 'Ano do Primeiro Resumo', 'Ano do Último Resumo',
+                    'Apresentação de Trabalhos', 'Ano da Primeira Apresentação', 'Ano da Última Apresentação'])
+
+    for pasta, subpastas, arquivos in os.walk(pasta_raiz):
+        for arquivo in arquivos:
+            if arquivo.endswith(".zip"):
+                arquivo_zip = os.path.join(pasta, arquivo)
+
+                with zipfile.ZipFile(arquivo_zip, 'r') as zf:
+                    for entry in zf.infolist():
+                        if entry.filename.endswith(".xml"):
+                            xml_file = zf.extract(entry, path=pasta)
+                            tree = ET.parse(xml_file)
+                            root = tree.getroot()
+                            numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
+                            nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO', '')
+
+                            artigos_completos = root.findall('.//ARTIGO-PUBLICADO[@NATUREZA="COMPLETO-DE-PERIODICO"]')
+                            primeiro_artigo = obter_ano_do_artigo(artigos_completos[0]) if artigos_completos else ""
+                            ultimo_artigo = obter_ano_do_artigo(artigos_completos[-1]) if artigos_completos else ""
+
+                            livros_publicados = root.findall('.//LIVRO-PUBLICADO-OU-ORGANIZADO')
+                            primeiro_livro = obter_ano(livros_publicados[0]) if livros_publicados else ""
+                            ultimo_livro = obter_ano(livros_publicados[-1]) if livros_publicados else ""
+
+                            capitulos_livros = root.findall('.//CAPITULO-DE-LIVRO-PUBLICADO')
+                            primeiro_capitulo = obter_ano(capitulos_livros[0]) if capitulos_livros else ""
+                            ultimo_capitulo = obter_ano(capitulos_livros[-1]) if capitulos_livros else ""
+
+                            trabalhos_completos = root.findall('.//TRABALHO-EM-EVENTOS[@NATUREZA="COMPLETO"]')
+                            primeiro_trabalho = obter_ano(trabalhos_completos[0]) if trabalhos_completos else ""
+                            ultimo_trabalho = obter_ano(trabalhos_completos[-1]) if trabalhos_completos else ""
+
+                            resumos_expandidos = root.findall('.//RESUMO-EXPANDIDO-EM-EVENTOS')
+                            primeiro_resumo_expandido = obter_ano(resumos_expandidos[0]) if resumos_expandidos else ""
+                            ultimo_resumo_expandido = obter_ano(resumos_expandidos[-1]) if resumos_expandidos else ""
+
+                            resumos = root.findall('.//RESUMO-DE-TRABALHO-PUBLICADO')
+                            primeiro_resumo = obter_ano(resumos[0]) if resumos else ""
+                            ultimo_resumo = obter_ano(resumos[-1]) if resumos else ""
+
+                            apresentacao_trabalhos = root.findall('.//APRESENTACAO-DE-TRABALHO')
+                            primeira_apresentacao = obter_ano_da_apresentacao(apresentacao_trabalhos[0]) if apresentacao_trabalhos else ""
+                            ultima_apresentacao = obter_ano_da_apresentacao(apresentacao_trabalhos[-1]) if apresentacao_trabalhos else ""
+
+                            writer.writerow([numero_identificador, nome_individuo, len(artigos_completos), primeiro_artigo, ultimo_artigo,
+                                            len(livros_publicados), primeiro_livro, ultimo_livro,
+                                            len(capitulos_livros), primeiro_capitulo, ultimo_capitulo,
+                                            len(trabalhos_completos), primeiro_trabalho, ultimo_trabalho,
+                                            len(resumos_expandidos), primeiro_resumo_expandido, ultimo_resumo_expandido,
+                                            len(resumos), primeiro_resumo, ultimo_resumo,
+                                            len(apresentacao_trabalhos), primeira_apresentacao, ultima_apresentacao])
+
+    print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo5_csv}'.")
 '''   1 ( feito )
     inserir o numero indentificador que está nas primeiras linhas do xml 
 
@@ -232,19 +357,19 @@ with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
                     [ so tem q verificar q acho q nao ta pegando a quantidade ta dando 0,0,0 mas os outros estão ok ( pode ser algum erro de digitação da tag)]
 
 
-                        6
+                        6 (feito)
 
                         Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos: Idiomas:
                         Pegar para cada idioma do sujeito qual é a proficiência em 1) Compreende, 2) Fala, 3) Lê, e 4) Escreve
 
-                            7
+                            7 ( feito porem nao consegui achar o projeto de extensão e desenvolvimento)
 
                             Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                             Total de Projetos de Pesquisa (ano de conclusão do primeiro e último projeto),
                             Total de Projetos de Extensão (ano de conclusão do primeiro e último projeto),
                             Total de Projetos de Desenvolvimento (ano de conclusão do primeiro e último projeto).
 
-                                8
+                                8 ( feito mas muitos nao ta pegando e os anos tbm nao estao sendo pegos)
 
                                 Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                                 Quantidade de artigos completos publicados em periódicos, ano do primeiro e do último,
