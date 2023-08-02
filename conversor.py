@@ -3,12 +3,13 @@ import csv  # Importa a biblioteca csv para manipular arquivos CSV
 import os  # Importa a biblioteca os para operações de sistema
 import zipfile  # Importa a biblioteca zipfile para trabalhar com arquivos ZIP
 
-pasta_raiz = r'C:\Users\Arthur\Desktop\pyp\collectionn'  # Define a pasta raiz onde os arquivos serão pesquisados
+pasta_raiz = r'C:\Users\aluno\Desktop\collectionTeste'  # Define a pasta raiz onde os arquivos serão pesquisados
 arquivo_csv = "dadoszip.csv"  # Define o nome do arquivo CSV que será criado
 arquivo2_csv = "informacoes.csv"  # Define o nome do segundo arquivo CSV que será criado
 arquivo3_csv = "idiomas.csv"  # Define o nome do terceiro arquivo CSV que será criado
 arquivo4_csv = "projetos.csv" #Define o nome do quarto arquivo CSV que será criado
 arquivo5_csv = "publicacoes.csv"  # Define o nome do quinto arquivo CSV que será criado
+arquivo6_csv ="produção tecnica.csv" #define o nome do sexto arquivo csv que será criado 
 
 def obter_ano(elemento):
     if elemento is not None:
@@ -328,6 +329,64 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
                                             len(apresentacao_trabalhos), primeira_apresentacao, ultima_apresentacao])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo5_csv}'.")
+with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
+    writer = csv.writer(file)
+    writer.writerow(['Número Identificador', 'Nome', 'Total de Programas de computador sem registro',
+                     'Ano do Primeiro Programa de computador sem registro', 'Ano do Último Programa de computador sem registro',
+                     'Total de Trabalhos técnicos', 'Ano do Primeiro Trabalho técnico', 'Ano do Último Trabalho técnico',
+                     'Total de Programas de computador com registro', 'Ano do Primeiro Programa de computador com registro',
+                     'Ano do Último Programa de computador com registro',
+                     'Total de Programas de Patentes', 'Ano do Primeiro Programa de Patentes', 'Ano do Último Programa de Patentes'])
+
+    for pasta, subpastas, arquivos in os.walk(pasta_raiz):
+        for arquivo in arquivos:
+            if arquivo.endswith(".zip"):
+                arquivo_zip = os.path.join(pasta, arquivo)
+
+                with zipfile.ZipFile(arquivo_zip, 'r') as zf:
+                    for entry in zf.infolist():
+                        if entry.filename.endswith(".xml"):
+                            xml_file = zf.extract(entry, path=pasta)
+                            tree = ET.parse(xml_file)
+                            root = tree.getroot()
+                            numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
+                            nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO', '')
+                            programas_sem_registro = root.findall('.//PROGRAMA-DE-COMPUTADOR[@TIPO="Sem registro"]')
+                            programas_com_registro = root.findall('.//PROGRAMA-DE-COMPUTADOR[@TIPO="Com registro"]')
+                            programas_patentes = root.findall('.//REGISTRO-OU-PATENTE[@TIPO-PATENTE="PROGRAMA_DE_COMPUTADOR_PC"]')
+
+                            primeiro_programa_sem_registro = min(int(p.attrib.get('ANO', '9999')) for p in programas_sem_registro) if programas_sem_registro else None
+                            ultimo_programa_sem_registro = max(int(p.attrib.get('ANO', '0')) for p in programas_sem_registro) if programas_sem_registro else None
+                            primeiro_programa_com_registro = min(int(p.find('DADOS-BASICOS-DO-PROGRAMA').attrib.get('ANO', '9999')) for p in programas_com_registro) if programas_com_registro else None
+                            ultimo_programa_com_registro = max(int(p.find('DADOS-BASICOS-DO-PROGRAMA').attrib.get('ANO', '0')) for p in programas_com_registro) if programas_com_registro else None
+                            primeiro_programa_patentes = min(int(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO', '99991231')[-4:]) for p in programas_patentes if p.attrib.get('DATA-PEDIDO-DE-DEPOSITO')) if programas_patentes else None
+                            ultimo_programa_patentes = max(int(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO', '00000000')[-4:]) for p in programas_patentes if p.attrib.get('DATA-PEDIDO-DE-DEPOSITO')) if programas_patentes else None
+
+                            # Counting the number of trabalho-tecnico elements
+                            trabalhos_tecnicos = root.findall('.//TRABALHO-TECNICO')
+                            total_trabalhos_tecnicos = len(trabalhos_tecnicos)
+
+                            # Extracting first and last years of trabalho-tecnico elements
+                            primeiro_trabalho_tecnico = (
+                                int(trabalhos_tecnicos[0].find('DADOS-BASICOS-DO-TRABALHO-TECNICO').attrib.get('ANO')) if trabalhos_tecnicos else None
+                            )
+                            ultimo_trabalho_tecnico = (
+                                int(trabalhos_tecnicos[-1].find('DADOS-BASICOS-DO-TRABALHO-TECNICO').attrib.get('ANO')) if trabalhos_tecnicos else None
+                            )
+
+                            # Writing the row with variables
+                            row_data = [numero_identificador, nome_individuo, len(programas_sem_registro),
+                                        primeiro_programa_sem_registro, ultimo_programa_sem_registro,
+                                        total_trabalhos_tecnicos, primeiro_trabalho_tecnico, ultimo_trabalho_tecnico,
+                                        len(programas_com_registro),
+                                        primeiro_programa_com_registro, ultimo_programa_com_registro,
+                                        len(programas_patentes), primeiro_programa_patentes, ultimo_programa_patentes]
+
+                            writer.writerow(row_data)
+
+print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
+
+
 '''   1 ( feito )
     inserir o numero indentificador que está nas primeiras linhas do xml 
 
@@ -380,13 +439,13 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
                                 Quantidade de Resumos expandidos publicados em am anais de congressos, ano do primeiro e do último, Quantidade de Resumos publicados em am anais de congressos, ano do primeiro e do último,
                                 Quantidade de Apresentação de trabalhos, ano do primeiro e do último
 
-                                    9
+                                    9(feito porem nao consegui achar algumas informações como as tags dos programas de computaodr e programa de patente)
 
                                     Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                                     Total de Programas de computador sem registro (ano do primeiro e último),
                                     Total de Trabalhos técnicos (ano do primeiro e último),
                                     Total de Programas de computador com registro (ano do primeiro e último),
-                                    Total de Programas de Patentes (ano do primeiro e último
+                                    Total de Programas de Patentes (ano do primeiro e último)
 
                                         10
 
