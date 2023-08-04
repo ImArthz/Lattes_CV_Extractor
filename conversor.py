@@ -3,13 +3,15 @@ import csv  # Importa a biblioteca csv para manipular arquivos CSV
 import os  # Importa a biblioteca os para operações de sistema
 import zipfile  # Importa a biblioteca zipfile para trabalhar com arquivos ZIP
 
-pasta_raiz = r'C:\Users\aluno\Desktop\collectionTeste'  # Define a pasta raiz onde os arquivos serão pesquisados
+pasta_raiz = r'C:\Users\aluno\Desktop\arthur\collectionTeste'  # Define a pasta raiz onde os arquivos serão pesquisados
 arquivo_csv = "dadoszip.csv"  # Define o nome do arquivo CSV que será criado
 arquivo2_csv = "informacoes.csv"  # Define o nome do segundo arquivo CSV que será criado
 arquivo3_csv = "idiomas.csv"  # Define o nome do terceiro arquivo CSV que será criado
 arquivo4_csv = "projetos.csv" #Define o nome do quarto arquivo CSV que será criado
 arquivo5_csv = "publicacoes.csv"  # Define o nome do quinto arquivo CSV que será criado
-arquivo6_csv ="produção tecnica.csv" #define o nome do sexto arquivo csv que será criado 
+arquivo6_csv ="produção tecnica.csv" #Define o nome do sexto arquivo csv que será criado 
+arquivo7_csv = "bancas doutorado & mestrado.csv"#Define o nome do setimo arquivo csv que será criado
+arquivo8_csv ="orientações em andamento.csv"#Define o nome do oitavo arquivo csv que será criado
 
 def obter_ano(elemento):
     if elemento is not None:
@@ -332,11 +334,11 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
 with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['Número Identificador', 'Nome', 'Total de Programas de computador sem registro',
-                     'Ano do Primeiro Programa de computador sem registro', 'Ano do Último Programa de computador sem registro',
-                     'Total de Trabalhos técnicos', 'Ano do Primeiro Trabalho técnico', 'Ano do Último Trabalho técnico',
-                     'Total de Programas de computador com registro', 'Ano do Primeiro Programa de computador com registro',
-                     'Ano do Último Programa de computador com registro',
-                     'Total de Programas de Patentes', 'Ano do Primeiro Programa de Patentes', 'Ano do Último Programa de Patentes'])
+                    'Ano do Primeiro Programa de computador sem registro', 'Ano do Último Programa de computador sem registro',
+                    'Total de Trabalhos técnicos', 'Ano do Primeiro Trabalho técnico', 'Ano do Último Trabalho técnico',
+                    'Total de Programas de computador com registro', 'Ano do Primeiro Programa de computador com registro',
+                    'Ano do Último Programa de computador com registro',
+                    'Total de Programas de Patentes', 'Ano do Primeiro Programa de Patentes', 'Ano do Último Programa de Patentes'])
 
     for pasta, subpastas, arquivos in os.walk(pasta_raiz):
         for arquivo in arquivos:
@@ -385,6 +387,63 @@ with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
                             writer.writerow(row_data)
 
 print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
+
+with open(arquivo7_csv, 'w', encoding='utf-8', newline='') as file:
+    writer = csv.writer(file)
+
+    writer.writerow(['Número Identificador', 'Nome', 'Total de Participação em Bancas',
+                    'Total de Participação em Eventos', 'Ano do Primeiro Evento', 'Ano do Último Evento'])
+    for pasta, subpastas, arquivos in os.walk(pasta_raiz):
+        for arquivo in arquivos:
+            if arquivo.endswith(".zip"):
+                arquivo_zip = os.path.join(pasta, arquivo)
+                with zipfile.ZipFile(arquivo_zip, 'r') as zf:
+                    for entry in zf.infolist():
+                        if entry.filename.endswith(".xml"):
+                            xml_file = zf.extract(entry, path=pasta)
+                            tree = ET.parse(xml_file)
+                            root = tree.getroot()
+                            # Código para extrair informações dos trabalhos em eventos e bancas
+                            participacao_em_bancas = root.findall('.//PARTICIPACAO-EM-BANCA-DE-APERFEICOAMENTO-ESPECIALIZACAO')
+                            total_participacao_em_bancas = len(participacao_em_bancas)
+                            trabalhos_em_eventos = root.findall('.//TRABALHO-EM-EVENTOS')
+                            total_participacao_em_eventos = len(trabalhos_em_eventos)
+                            primeiro_evento = min(int(e.find('DADOS-BASICOS-DO-TRABALHO').attrib.get('ANO-DO-TRABALHO', '9999')) for e in trabalhos_em_eventos) if trabalhos_em_eventos else None
+                            ultimo_evento = max(int(e.find('DADOS-BASICOS-DO-TRABALHO').attrib.get('ANO-DO-TRABALHO', '0')) for e in trabalhos_em_eventos) if trabalhos_em_eventos else None
+                            numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
+                            nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO', '')
+                            # Escrever a linha de dados no CSV
+                            row_data = [numero_identificador, nome_individuo, total_participacao_em_bancas,
+                                        total_participacao_em_eventos, primeiro_evento, ultimo_evento]
+
+                            writer.writerow(row_data)
+print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo7_csv}'.")
+with open(arquivo8_csv, 'w', encoding='utf-8', newline='') as file:
+    writer = csv.writer(file)
+
+    writer.writerow(['Número Identificador', 'Nome', 'Orientações em Andamento','Orientações concluidas'])
+
+    for pasta, subpastas, arquivos in os.walk(pasta_raiz):
+        for arquivo in arquivos:
+            if arquivo.endswith(".zip"):
+                arquivo_zip = os.path.join(pasta, arquivo)
+                with zipfile.ZipFile(arquivo_zip, 'r') as zf:
+                    for entry in zf.infolist():
+                        if entry.filename.endswith(".xml"):
+                            xml_file = zf.extract(entry, path=pasta)
+                            tree = ET.parse(xml_file)
+                            root = tree.getroot()
+                            numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
+                            nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO', '')
+                            # Contagem das orientações em andamento e concluídas
+                            orientacoes_andamento = len(root.findall('.//ORIENTACOES-EM-ANDAMENTO/'))
+                            oritenacoes_concluidas = len(root.findall('.//ORIENTACOES-CONCLUIDAS/'))
+                            
+                            # Writing the row with variables
+                            row_data = [numero_identificador, nome_individuo,
+                                        orientacoes_andamento, oritenacoes_concluidas]
+                            writer.writerow(row_data)
+print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
 
 
 '''   1 ( feito )
@@ -439,7 +498,7 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
                                 Quantidade de Resumos expandidos publicados em am anais de congressos, ano do primeiro e do último, Quantidade de Resumos publicados em am anais de congressos, ano do primeiro e do último,
                                 Quantidade de Apresentação de trabalhos, ano do primeiro e do último
 
-                                    9(feito porem nao consegui achar algumas informações como as tags dos programas de computaodr e programa de patente)
+                                    9(feito porem nao consegui achar algumas informações como as tags dos programas de computador e programa de patente)
 
                                     Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                                     Total de Programas de computador sem registro (ano do primeiro e último),
@@ -447,7 +506,7 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
                                     Total de Programas de computador com registro (ano do primeiro e último),
                                     Total de Programas de Patentes (ano do primeiro e último)
 
-                                        10
+                                        10(feito esse aqui ta pegando tudo certinho)
 
                                         Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                                         Total de Participação em Bancas (Graduação, especialização,
@@ -455,12 +514,17 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
                                         Qualificação de doutorado, doutorado.),
                                         quantidade de participação em Eventos (ano do primeiro e último). 
 
-                                            11
+                                            11 ( feito esta pegando tudo tbm  )
 
                                             Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                                             Quantidade de orientações em andamento
                                             (iniciação científica, Graduação, especialização,
                                             mestrado, doutorado, outra natureza) (Em andamento e concluídas).
 
+                                            
+
+                                            coisas a checar :
+                                            comentario 2,4*,5,7,8,9
+                                            4* (pode está certo checar)
 link github: https://github.com/ImArthz/Lattes_CV_Extractor
 '''
