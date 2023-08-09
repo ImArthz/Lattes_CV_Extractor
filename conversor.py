@@ -3,7 +3,7 @@ import csv  # Importa a biblioteca csv para manipular arquivos CSV
 import os  # Importa a biblioteca os para operações de sistema
 import zipfile  # Importa a biblioteca zipfile para trabalhar com arquivos ZIP
 
-pasta_raiz = r'C:\Users\aluno\Desktop\arthur\collectionTeste'  # Define a pasta raiz onde os arquivos serão pesquisados
+pasta_raiz = r'C:\Users\aluno\Desktop\arthur\Teste'  # Define a pasta raiz onde os arquivos serão pesquisados
 arquivo_csv = "dadoszip.csv"  # Define o nome do arquivo CSV que será criado
 arquivo2_csv = "informacoes.csv"  # Define o nome do segundo arquivo CSV que será criado
 arquivo3_csv = "idiomas.csv"  # Define o nome do terceiro arquivo CSV que será criado
@@ -13,6 +13,7 @@ arquivo6_csv ="produção tecnica.csv" #Define o nome do sexto arquivo csv que s
 arquivo7_csv = "bancas doutorado & mestrado.csv"#Define o nome do setimo arquivo csv que será criado
 arquivo8_csv ="orientações em andamento.csv"#Define o nome do oitavo arquivo csv que será criado
 
+print(f"Iniciando o programa ...")
 def obter_ano(elemento):
     if elemento is not None:
         ano_elemento = elemento.attrib.get('ANO-DO-ARTIGO') or elemento.attrib.get('ANO') or elemento.attrib.get('ANO-DA-APRESENTACAO')
@@ -46,7 +47,7 @@ def get_first_element(root, xpath):
 # Função auxiliar para obter o texto de um elemento XML
 def get_element_text(element):
     return element.text if element is not None else None
-
+print(f"Iniciando extração para {arquivo_csv} ... ")
 # Abre o arquivo CSV 'arquivo_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
 with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
@@ -55,7 +56,7 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                     'Ano de Início', 'Ano de conclusão', 'Mestrado Nome da instituiçao', 'mestrado nome do curso', 'mestrado ano inicio',
                     'mestrado ano conclusão', 'mestrado titulo da tese', 'doutorado nome da intituição', 'doutorado nome do curso',
                     'doutado ano de inicio', 'doutorado ano de conlusao', 'doutorado titulo da tese', 'formação complementar Nome do curso',
-                    'formação complementar intituiçao', 'formação complementar ano inicio', 'formação complementar ano de conclusão'])
+                    'formação complementar intituiçao', 'formação complementar ano inicio', 'formação complementar ano de conclusão','Quantidade De especializações'])
 
     # Percorre recursivamente todas as pastas e arquivos na árvore de diretórios a partir da pasta raiz (pasta_raiz)
     for pasta, subpastas, arquivos in os.walk(pasta_raiz):
@@ -126,7 +127,7 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                             else:
                                 doutorado_nome_instituicao = doutorado_nome_curso = doutorado_ano_inicio = doutorado_ano_conclusao = doutorado_titulo_tese = None
 
-                            formacao_complementar_element = get_first_element(root, "./DADOS-COMPLEMENTARES/FORMACAO-COMPLEMENTAR/FORMACAO-COMPLEMENTAR-DE-EXTENSAO-UNIVERSITARIA")  # Obtém o elemento FORMACAO-COMPLEMENTAR-DE-EXTENSAO-UNIVERSITARIA do XML
+                            formacao_complementar_element = get_first_element(root, "./DADOS-COMPLEMENTARES/FORMACAO-COMPLEMENTAR/FORMACAO-COMPLEMENTAR-CURSO-DE-CURTA-DURACAO")  # Obtém o elemento FORMACAO-COMPLEMENTAR-DE-EXTENSAO-UNIVERSITARIA do XML
                             if formacao_complementar_element is not None:
                                 # Obtém informações da formação complementar, como nome do curso, nome da instituição, ano de início e ano de conclusão
                                 formacaocompl_nome_curso = get_attrib_value(formacao_complementar_element, "NOME-CURSO")
@@ -135,8 +136,12 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                                 formacaocompl_ano_conclusao = get_attrib_value(formacao_complementar_element, "ANO-DE-CONCLUSAO")
                             else:
                                 formacaocompl_nome_curso = formacaocompl_nome_instituicao = formacaocompl_ano_inicio = formacaocompl_ano_conclusao = None
-
-                            areas_de_atuacao = [area.get("NOME-DA-SUB-AREA-DO-CONHECIMENTO") for area in root.findall(".//AREA-DE-ATUACAO")]  # Obtém as áreas de atuação
+                            #Obtém informações sobre os cursos de especialização
+                            especializacao_element = root.findall('./DADOS-COMPLEMENTARES/INFORMACOES-ADICIONAIS-CURSOS/INFORMACAO-ADICIONAL-CURSO[@NIVEL-CURSO="ESPECIALIZACAO"]')
+                            if especializacao_element is not None:
+                                quantidade_especializacoes = len(especializacao_element)
+                            else:
+                                quantidade_especializacoes = None                                    
 
                             # Escreve uma linha com as informações extraídas no arquivo CSV
                             writer.writerow([numero_identificador, nome_completo, cidade_nascimento,
@@ -149,10 +154,10 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                                             doutorado_nome_curso, doutorado_ano_inicio, doutorado_ano_conclusao,
                                             doutorado_titulo_tese, formacaocompl_nome_curso,
                                             formacaocompl_nome_instituicao, formacaocompl_ano_inicio,
-                                            formacaocompl_ano_conclusao])
+                                            formacaocompl_ano_conclusao,quantidade_especializacoes])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo_csv}'.")
-
+print(f"Iniciando extração para {arquivo2_csv} ... ")
 # Abre o arquivo CSV 'arquivo2_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
 with open(arquivo2_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
@@ -175,18 +180,20 @@ with open(arquivo2_csv, 'w', encoding='utf-8', newline='') as file:
                             nome_individuo = root.find('DADOS-GERAIS').attrib['NOME-COMPLETO']  # Obtém o nome do indivíduo
 
                             linhas_de_pesquisa = [linha.attrib['TITULO-DA-LINHA-DE-PESQUISA'] for linha in root.iter('LINHA-DE-PESQUISA')]  # Obtém as linhas de pesquisa
-
+                            #areas_de_atuacao = [linha.attrib['NOME-DA-SUB-AREA-DO-CONHECIMENTO'] for linha in root.iter('AREAS-DE-ATUACAO')]  # Obtém as areas de atuacao
+                            areas_de_atuacao = [area.get("NOME-DA-SUB-AREA-DO-CONHECIMENTO") for area in root.findall(".//AREA-DE-ATUACAO")]
+                            areas_de_atuacao = [area for area in areas_de_atuacao if area is not None]  # Filtrar os valores None
                             # Conta a quantidade de membros de corpo editorial, revisores de periódico e revisores de projeto de fomento
-                            quantidade_corpo_editorial = len(root.findall('.//ATUACAO-PROFISSIONAL[@ENQUADRAMENTO-FUNCIONAL="MEMBRO-DE-CORPO-EDITORIAL"]'))
-                            quantidade_revisor_periodico = len(root.findall('.//ATUACAO-PROFISSIONAL[@ENQUADRAMENTO-FUNCIONAL="REVISOR-DE-PERIODICO"]'))
-                            quantidade_revisor_projeto = len(root.findall('.//ATUACAO-PROFISSIONAL[@ENQUADRAMENTO-FUNCIONAL="REVISOR-DE-PROJETO-DE-FOMENTO"]'))
+                            quantidade_corpo_editorial = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="MEMBRO-DE-CORPO-EDITORIAL"]'))
+                            quantidade_revisor_periodico = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="REVISOR-DE-PERIODICO"]'))
+                            quantidade_revisor_projeto = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="REVISOR-DE-PROJETO-DE-FOMENTO"]'))
 
                             writer.writerow([numero_identificador, nome_individuo, ', '.join(linhas_de_pesquisa),
                                             quantidade_corpo_editorial, quantidade_revisor_periodico,
                                             quantidade_revisor_projeto, ', '.join(areas_de_atuacao)])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo2_csv}'.")
-
+print(f"Iniciando extração para {arquivo3_csv} ... ")
 # Abre o arquivo CSV 'arquivo3_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
 with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
@@ -224,7 +231,7 @@ with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
                             writer.writerow([numero_identificador, nome_individuo] + sum(idiomas_lista, []))
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo3_csv}'.")
-
+print(f"Iniciando extração para {arquivo4_csv} ... ")
 with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['Número Identificador', 'Nome', 'Total de Projetos de Pesquisa',
@@ -270,6 +277,7 @@ with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
                                             total_projetos_desenvolvimento, primeiro_projeto_desenvolvimento, ultimo_projeto_desenvolvimento])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo4_csv}'.")
+print(f"Iniciando extração para {arquivo5_csv} ... ")
 with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['Número Identificador', 'Nome', 'Artigos Completos em Periódicos', 'Ano do Primeiro Artigo', 'Ano do Último Artigo',
@@ -331,6 +339,7 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
                                             len(apresentacao_trabalhos), primeira_apresentacao, ultima_apresentacao])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo5_csv}'.")
+print(f"Iniciando extração para {arquivo6_csv} ... ")
 with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['Número Identificador', 'Nome', 'Total de Programas de computador sem registro',
@@ -361,8 +370,13 @@ with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
                             ultimo_programa_sem_registro = max(int(p.attrib.get('ANO', '0')) for p in programas_sem_registro) if programas_sem_registro else None
                             primeiro_programa_com_registro = min(int(p.find('DADOS-BASICOS-DO-PROGRAMA').attrib.get('ANO', '9999')) for p in programas_com_registro) if programas_com_registro else None
                             ultimo_programa_com_registro = max(int(p.find('DADOS-BASICOS-DO-PROGRAMA').attrib.get('ANO', '0')) for p in programas_com_registro) if programas_com_registro else None
-                            primeiro_programa_patentes = min(int(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO', '99991231')[-4:]) for p in programas_patentes if p.attrib.get('DATA-PEDIDO-DE-DEPOSITO')) if programas_patentes else None
-                            ultimo_programa_patentes = max(int(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO', '00000000')[-4:]) for p in programas_patentes if p.attrib.get('DATA-PEDIDO-DE-DEPOSITO')) if programas_patentes else None
+                            primeiro_programa_patentes = None
+                            ultimo_programa_patentes = None
+
+                            if programas_patentes and any(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO') for p in programas_patentes):
+                                primeiro_programa_patentes = min(int(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO', '99991231')[-4:]) for p in programas_patentes if p.attrib.get('DATA-PEDIDO-DE-DEPOSITO'))
+                                ultimo_programa_patentes = max(int(p.attrib.get('DATA-PEDIDO-DE-DEPOSITO', '00000000')[-4:]) for p in programas_patentes if p.attrib.get('DATA-PEDIDO-DE-DEPOSITO'))
+
 
                             # Counting the number of trabalho-tecnico elements
                             trabalhos_tecnicos = root.findall('.//TRABALHO-TECNICO')
@@ -387,7 +401,7 @@ with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
                             writer.writerow(row_data)
 
 print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
-
+print(f"Iniciando extração para {arquivo7_csv} ... ")
 with open(arquivo7_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
 
@@ -418,6 +432,7 @@ with open(arquivo7_csv, 'w', encoding='utf-8', newline='') as file:
 
                             writer.writerow(row_data)
 print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo7_csv}'.")
+print(f"Iniciando extração para {arquivo8_csv} ... ")
 with open(arquivo8_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
 
@@ -450,7 +465,7 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
     inserir o numero indentificador que está nas primeiras linhas do xml 
 
         2
-    writer.writerow(['Identificador', 'Nome', 'Idiomas', 'Proficiência de Compreensão', 'Proficiência de Fala', 'Proficiência de Leitura', 'Proficiência de Escrita'])
+    
 
         inserir os dados da graduação( que ja tem ) os  de curso técnico, os dados de especialização,
         de mestrado e de doutorado. 
@@ -524,7 +539,25 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
                                             
 
                                             coisas a checar :
-                                            comentario 2,4*,5,7,8,9
-                                            4* (pode está certo checar)
+                                            comentario 2,4*,5,7,8,9 
+                                            ( 2 feito, 4* parece normal,
+                                            5 arrumei
+                                            todas a respeito da area de atuaçao e linha de pesquisa
+                                            porem em questão as funções vou precisas de 1 curriculo com elas para checar as tags em questão esta como 0,0,0)
+                                            
 link github: https://github.com/ImArthz/Lattes_CV_Extractor
 '''
+
+
+
+
+
+
+
+
+
+
+
+
+
+
