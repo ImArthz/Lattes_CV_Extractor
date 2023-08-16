@@ -12,28 +12,9 @@ arquivo5_csv = "publicacoes.csv"  # Define o nome do quinto arquivo CSV que ser�
 arquivo6_csv ="produção tecnica.csv" #Define o nome do sexto arquivo csv que será criado 
 arquivo7_csv = "bancas doutorado & mestrado.csv"#Define o nome do setimo arquivo csv que será criado
 arquivo8_csv ="orientações em andamento.csv"#Define o nome do oitavo arquivo csv que será criado
+count = 0
 
 print(f"Iniciando o programa ...")
-def obter_ano(elemento):
-    if elemento is not None:
-        ano_elemento = elemento.attrib.get('ANO-DO-ARTIGO') or elemento.attrib.get('ANO') or elemento.attrib.get('ANO-DA-APRESENTACAO')
-        if ano_elemento is not None:
-            return ano_elemento.strip()
-    return ""
-
-def obter_ano_do_artigo(elemento):
-    if elemento is not None:
-        ano_artigo = elemento.find('DADOS-BASICOS-DO-ARTIGO').attrib.get('ANO-DO-ARTIGO')
-        if ano_artigo is not None:
-            return ano_artigo.strip()
-    return ""
-
-def obter_ano_da_apresentacao(elemento):
-    if elemento is not None:
-        ano_apresentacao = elemento.attrib.get('ANO-DA-APRESENTACAO')
-        if ano_apresentacao is not None:
-            return ano_apresentacao.strip()
-    return ""
 
 # Função auxiliar para obter o valor de um atributo de um elemento XML
 def get_attrib_value(element, attribute):
@@ -157,6 +138,7 @@ with open(arquivo_csv, mode='w', newline='', encoding='utf-8') as file:
                                             formacaocompl_ano_conclusao,quantidade_especializacoes])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo_csv}'.")
+    count += 1
 print(f"Iniciando extração para {arquivo2_csv} ... ")
 # Abre o arquivo CSV 'arquivo2_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
 with open(arquivo2_csv, 'w', encoding='utf-8', newline='') as file:
@@ -184,15 +166,16 @@ with open(arquivo2_csv, 'w', encoding='utf-8', newline='') as file:
                             areas_de_atuacao = [area.get("NOME-DA-SUB-AREA-DO-CONHECIMENTO") for area in root.findall(".//AREA-DE-ATUACAO")]
                             areas_de_atuacao = [area for area in areas_de_atuacao if area is not None]  # Filtrar os valores None
                             # Conta a quantidade de membros de corpo editorial, revisores de periódico e revisores de projeto de fomento
-                            quantidade_corpo_editorial = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="MEMBRO-DE-CORPO-EDITORIAL"]'))
-                            quantidade_revisor_periodico = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="REVISOR-DE-PERIODICO"]'))
-                            quantidade_revisor_projeto = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="REVISOR-DE-PROJETO-DE-FOMENTO"]'))
+                            quantidade_corpo_editorial = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="Membro de corpo editorial"]'))
+                            quantidade_revisor_periodico = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="Revisor de periódico"]'))
+                            quantidade_revisor_projeto = len(root.findall('.//ATUACAO-PROFISSIONAL[@OUTRO-ENQUADRAMENTO-FUNCIONAL-INFORMADO="Revisor de Projeto de Fomento"]'))
 
                             writer.writerow([numero_identificador, nome_individuo, ', '.join(linhas_de_pesquisa),
                                             quantidade_corpo_editorial, quantidade_revisor_periodico,
                                             quantidade_revisor_projeto, ', '.join(areas_de_atuacao)])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo2_csv}'.")
+    count+= 1
 print(f"Iniciando extração para {arquivo3_csv} ... ")
 # Abre o arquivo CSV 'arquivo3_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
 with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
@@ -231,6 +214,7 @@ with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
                             writer.writerow([numero_identificador, nome_individuo] + sum(idiomas_lista, []))
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo3_csv}'.")
+    count +=1
 print(f"Iniciando extração para {arquivo4_csv} ... ")
 with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
@@ -255,9 +239,10 @@ with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
                             numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
                             nome_individuo = root.find('DADOS-GERAIS').attrib['NOME-COMPLETO']
 
-                            projetos_pesquisa = root.findall('.//PROJETO-DE-PESQUISA')
-                            projetos_extensao = root.findall('.//PROJETO-DE-EXTENSAO')
-                            projetos_desenvolvimento = root.findall('.//PROJETO-DE-DESENVOLVIMENTO')
+                            projetos_pesquisa = root.findall('.//PROJETO-DE-PESQUISA')#ou [@NATUREZA="PESQUISA"]
+
+                            projetos_extensao = root.findall('.//PROJETO-DE-PESQUISA[@NATUREZA="EXTENSAO"]')
+                            projetos_desenvolvimento = root.findall('.//PROJETO-DE-PESQUISA[@NATUREZA="DESENVOLVIMENTO"]')
 
                             total_projetos_pesquisa = len(projetos_pesquisa)
                             primeiro_projeto_pesquisa = projetos_pesquisa[0].attrib.get('ANO-FIM') if projetos_pesquisa else None
@@ -277,6 +262,13 @@ with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
                                             total_projetos_desenvolvimento, primeiro_projeto_desenvolvimento, ultimo_projeto_desenvolvimento])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo4_csv}'.")
+    count +=1
+print(f"Iniciando extração para {arquivo5_csv} ... ")
+import os
+import csv
+import zipfile
+import xml.etree.ElementTree as ET
+
 print(f"Iniciando extração para {arquivo5_csv} ... ")
 with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
@@ -300,35 +292,35 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
                             tree = ET.parse(xml_file)
                             root = tree.getroot()
                             numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
-                            nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO', '')
+                            nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO')
 
-                            artigos_completos = root.findall('.//ARTIGO-PUBLICADO[@NATUREZA="COMPLETO-DE-PERIODICO"]')
-                            primeiro_artigo = obter_ano_do_artigo(artigos_completos[0]) if artigos_completos else ""
-                            ultimo_artigo = obter_ano_do_artigo(artigos_completos[-1]) if artigos_completos else ""
+                            artigos_completos = root.findall('.//DADOS-BASICOS-DO-ARTIGO[@NATUREZA="COMPLETO"]')
+                            primeiro_artigo = artigos_completos[0].attrib.get('ANO-DO-ARTIGO') if artigos_completos else ""
+                            ultimo_artigo = artigos_completos[-1].attrib.get('ANO-DO-ARTIGO') if artigos_completos else ""
 
-                            livros_publicados = root.findall('.//LIVRO-PUBLICADO-OU-ORGANIZADO')
-                            primeiro_livro = obter_ano(livros_publicados[0]) if livros_publicados else ""
-                            ultimo_livro = obter_ano(livros_publicados[-1]) if livros_publicados else ""
+                            livros_publicados = root.findall('.//DADOS-BASICOS-DO-LIVRO')#OU //livro-publicado-ou-organizado
+                            primeiro_livro = livros_publicados[0].attrib.get('ANO') if livros_publicados else ""
+                            ultimo_livro = livros_publicados[-1].attrib.get('ANO') if livros_publicados else ""
 
-                            capitulos_livros = root.findall('.//CAPITULO-DE-LIVRO-PUBLICADO')
-                            primeiro_capitulo = obter_ano(capitulos_livros[0]) if capitulos_livros else ""
-                            ultimo_capitulo = obter_ano(capitulos_livros[-1]) if capitulos_livros else ""
+                            capitulos_livros = root.findall('.//DADOS-BASICOS-DO-CAPITULO ')
+                            primeiro_capitulo = capitulos_livros[0].attrib.get('ANO') if capitulos_livros else ""
+                            ultimo_capitulo = capitulos_livros[-1].attrib.get('ANO') if capitulos_livros else ""
 
-                            trabalhos_completos = root.findall('.//TRABALHO-EM-EVENTOS[@NATUREZA="COMPLETO"]')
-                            primeiro_trabalho = obter_ano(trabalhos_completos[0]) if trabalhos_completos else ""
-                            ultimo_trabalho = obter_ano(trabalhos_completos[-1]) if trabalhos_completos else ""
+                            trabalhos_completos = root.findall('.//DADOS-BASICOS-DO-TRABALHO[@NATUREZA="COMPLETO"]')
+                            primeiro_trabalho = trabalhos_completos[0].attrib.get('ANO-DO-TRABALHO') if trabalhos_completos else ""
+                            ultimo_trabalho = trabalhos_completos[-1].attrib.get('ANO-DO-TRABALHO') if trabalhos_completos else ""
 
-                            resumos_expandidos = root.findall('.//RESUMO-EXPANDIDO-EM-EVENTOS')
-                            primeiro_resumo_expandido = obter_ano(resumos_expandidos[0]) if resumos_expandidos else ""
-                            ultimo_resumo_expandido = obter_ano(resumos_expandidos[-1]) if resumos_expandidos else ""
+                            resumos_expandidos = root.findall('.//DADOS-BASICOS-DO-RESUMO-EXPANDIDO')#ou RESUMO-EXPANDIDO=EM-EVENTOS 
+                            primeiro_resumo_expandido = resumos_expandidos[0].attrib.get('ANO') if resumos_expandidos else ""
+                            ultimo_resumo_expandido = resumos_expandidos[-1].attrib.get('ANO') if resumos_expandidos else ""
 
-                            resumos = root.findall('.//RESUMO-DE-TRABALHO-PUBLICADO')
-                            primeiro_resumo = obter_ano(resumos[0]) if resumos else ""
-                            ultimo_resumo = obter_ano(resumos[-1]) if resumos else ""
+                            resumos = root.findall('.//DADOS-BASICOS-DO-RESUMO')#ou RESUMO-DE-TRABALHO-PUBLICADO
+                            primeiro_resumo = resumos[0].attrib.get('ANO') if resumos else ""
+                            ultimo_resumo = resumos[-1].attrib.get('ANO') if resumos else ""
 
-                            apresentacao_trabalhos = root.findall('.//APRESENTACAO-DE-TRABALHO')
-                            primeira_apresentacao = obter_ano_da_apresentacao(apresentacao_trabalhos[0]) if apresentacao_trabalhos else ""
-                            ultima_apresentacao = obter_ano_da_apresentacao(apresentacao_trabalhos[-1]) if apresentacao_trabalhos else ""
+                            apresentacao_trabalhos = root.findall('.//DADOS-BASICOS-DA-APRESENTACAO-DE-TRABALHO')
+                            primeira_apresentacao = apresentacao_trabalhos[0].attrib.get('ANO') if apresentacao_trabalhos else ""
+                            ultima_apresentacao = apresentacao_trabalhos[-1].attrib.get('ANO') if apresentacao_trabalhos else ""
 
                             writer.writerow([numero_identificador, nome_individuo, len(artigos_completos), primeiro_artigo, ultimo_artigo,
                                             len(livros_publicados), primeiro_livro, ultimo_livro,
@@ -339,7 +331,9 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
                                             len(apresentacao_trabalhos), primeira_apresentacao, ultima_apresentacao])
 
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo5_csv}'.")
+    count+=1
 print(f"Iniciando extração para {arquivo6_csv} ... ")
+
 with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['Número Identificador', 'Nome', 'Total de Programas de computador sem registro',
@@ -400,7 +394,8 @@ with open(arquivo6_csv, 'w', encoding='utf-8', newline='') as file:
 
                             writer.writerow(row_data)
 
-print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
+    print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo6_csv}'.")
+    count+=1
 print(f"Iniciando extração para {arquivo7_csv} ... ")
 with open(arquivo7_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
@@ -431,7 +426,8 @@ with open(arquivo7_csv, 'w', encoding='utf-8', newline='') as file:
                                         total_participacao_em_eventos, primeiro_evento, ultimo_evento]
 
                             writer.writerow(row_data)
-print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo7_csv}'.")
+    print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo7_csv}'.")
+    count+=1
 print(f"Iniciando extração para {arquivo8_csv} ... ")
 with open(arquivo8_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
@@ -458,9 +454,10 @@ with open(arquivo8_csv, 'w', encoding='utf-8', newline='') as file:
                             row_data = [numero_identificador, nome_individuo,
                                         orientacoes_andamento, oritenacoes_concluidas]
                             writer.writerow(row_data)
-print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
-
-
+    print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
+    count +=1
+if(count >= 8):
+    print(f"Todos os dados foram covertidos e armazenos nos arquivos \n \t\t Finalizando programa ...")
 '''   1 ( feito )
     inserir o numero indentificador que está nas primeiras linhas do xml 
 
@@ -510,7 +507,7 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
                                 Quantidade de capítulos de livros publicados, ano do primeiro e do último,
                                 Quantidade de trabalhos completos publicados em anais de congressos, ano do primeiro e do último,
                                 Quantidade de Resumos expandidos publicados em am anais de congressos, ano do primeiro e do último,
-                                Quantidade de Resumos expandidos publicados em am anais de congressos, ano do primeiro e do último, Quantidade de Resumos publicados em am anais de congressos, ano do primeiro e do último,
+                                Quantidade de Resumos publicados em am anais de congressos, ano do primeiro e do último,
                                 Quantidade de Apresentação de trabalhos, ano do primeiro e do último
 
                                     9(feito porem nao consegui achar algumas informações como as tags dos programas de computador e programa de patente)
@@ -544,7 +541,9 @@ print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
                                             5 arrumei
                                             todas a respeito da area de atuaçao e linha de pesquisa
                                             porem em questão as funções vou precisas de 1 curriculo com elas para checar as tags em questão esta como 0,0,0)
-                                            
+                                            7
+                                            feito tudo certo 
+
 link github: https://github.com/ImArthz/Lattes_CV_Extractor
 '''
 
