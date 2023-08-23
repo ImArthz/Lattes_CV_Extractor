@@ -264,12 +264,6 @@ with open(arquivo4_csv, 'w', encoding='utf-8', newline='') as file:
     print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo4_csv}'.")
     count +=1
 print(f"Iniciando extração para {arquivo5_csv} ... ")
-import os
-import csv
-import zipfile
-import xml.etree.ElementTree as ET
-
-print(f"Iniciando extração para {arquivo5_csv} ... ")
 with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
     writer = csv.writer(file)
     writer.writerow(['Número Identificador', 'Nome', 'Artigos Completos em Periódicos', 'Ano do Primeiro Artigo', 'Ano do Último Artigo',
@@ -294,31 +288,31 @@ with open(arquivo5_csv, 'w', encoding='utf-8', newline='') as file:
                             numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")
                             nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO')
 
-                            artigos_completos = root.findall('.//DADOS-BASICOS-DO-ARTIGO[@NATUREZA="COMPLETO"]')
+                            artigos_completos = root.findall('.//ARTIGO-PUBLICADO/DADOS-BASICOS-DO-ARTIGO[@NATUREZA="COMPLETO"]')
                             primeiro_artigo = artigos_completos[0].attrib.get('ANO-DO-ARTIGO') if artigos_completos else ""
                             ultimo_artigo = artigos_completos[-1].attrib.get('ANO-DO-ARTIGO') if artigos_completos else ""
 
-                            livros_publicados = root.findall('.//DADOS-BASICOS-DO-LIVRO')#OU //livro-publicado-ou-organizado
+                            livros_publicados = root.findall('.//LIVRO-PUBLICADO-OU-ORGANIZADO/DADOS-BASICOS-DO-LIVRO')#OU //livro-publicado-ou-organizado
                             primeiro_livro = livros_publicados[0].attrib.get('ANO') if livros_publicados else ""
                             ultimo_livro = livros_publicados[-1].attrib.get('ANO') if livros_publicados else ""
 
-                            capitulos_livros = root.findall('.//DADOS-BASICOS-DO-CAPITULO ')
+                            capitulos_livros = root.findall('.//CAPITULO-DE-LIVRO-PUBLICADO/DADOS-BASICOS-DO-CAPITULO')
                             primeiro_capitulo = capitulos_livros[0].attrib.get('ANO') if capitulos_livros else ""
                             ultimo_capitulo = capitulos_livros[-1].attrib.get('ANO') if capitulos_livros else ""
 
-                            trabalhos_completos = root.findall('.//DADOS-BASICOS-DO-TRABALHO[@NATUREZA="COMPLETO"]')
+                            trabalhos_completos = root.findall('.//TRABALHO-EM-EVENTOS/DADOS-BASICOS-DO-TRABALHO[@NATUREZA="COMPLETO"]')
                             primeiro_trabalho = trabalhos_completos[0].attrib.get('ANO-DO-TRABALHO') if trabalhos_completos else ""
                             ultimo_trabalho = trabalhos_completos[-1].attrib.get('ANO-DO-TRABALHO') if trabalhos_completos else ""
 
-                            resumos_expandidos = root.findall('.//DADOS-BASICOS-DO-RESUMO-EXPANDIDO')#ou RESUMO-EXPANDIDO=EM-EVENTOS 
-                            primeiro_resumo_expandido = resumos_expandidos[0].attrib.get('ANO') if resumos_expandidos else ""
-                            ultimo_resumo_expandido = resumos_expandidos[-1].attrib.get('ANO') if resumos_expandidos else ""
+                            resumos_expandidos = root.findall('.//TRABALHO-EM-EVENTOS/DADOS-BASICOS-DO-TRABALHO[@NATUREZA="RESUMO"]')#ou RESUMO-EXPANDIDO=EM-EVENTOS 
+                            primeiro_resumo_expandido = resumos_expandidos[0].attrib.get('ANO-DO-TRABALHO') if resumos_expandidos else ""
+                            ultimo_resumo_expandido = resumos_expandidos[-1].attrib.get('ANO-DO-TRABALHO') if resumos_expandidos else ""
 
-                            resumos = root.findall('.//DADOS-BASICOS-DO-RESUMO')#ou RESUMO-DE-TRABALHO-PUBLICADO
-                            primeiro_resumo = resumos[0].attrib.get('ANO') if resumos else ""
-                            ultimo_resumo = resumos[-1].attrib.get('ANO') if resumos else ""
+                            resumos = root.findall('.//TRABALHO-EM-EVENTOS/DADOS-BASICOS-DO-TRABALHO[@NATUREZA="RESUMO_EXPANDIDO"]')#ou RESUMO-DE-TRABALHO-PUBLICADO
+                            primeiro_resumo = resumos[0].attrib.get('ANO-DO-TRABALHO') if resumos else ""
+                            ultimo_resumo = resumos[-1].attrib.get('ANO-DO-TRABALHO') if resumos else ""
 
-                            apresentacao_trabalhos = root.findall('.//DADOS-BASICOS-DA-APRESENTACAO-DE-TRABALHO')
+                            apresentacao_trabalhos = root.findall('.//APRESENTACAO-DE-TRABALHO/DADOS-BASICOS-DA-APRESENTACAO-DE-TRABALHO')
                             primeira_apresentacao = apresentacao_trabalhos[0].attrib.get('ANO') if apresentacao_trabalhos else ""
                             ultima_apresentacao = apresentacao_trabalhos[-1].attrib.get('ANO') if apresentacao_trabalhos else ""
 
@@ -484,7 +478,8 @@ if(count >= 8):
                     Se tem algum registro como Revisor de periódico na "atuação profissional" (pegar a quantidade),
                     Se tem algum registro como Revisor de Projeto de Fomento na "atuação profissional" (pegar a quantidade),
                     Áreas de Atuação (Todas que tiver). 
-                    [ so tem q verificar q acho q nao ta pegando a quantidade ta dando 0,0,0 mas os outros estão ok ( pode ser algum erro de digitação da tag)]
+                    [ so tem q verificar q acho q nao ta pegando a quantidade ta dando 0,0,0 mas os outros estão ok 
+                    ( pode ser algum erro de digitação da tag)]
 
 
                         6 (feito)
@@ -510,7 +505,8 @@ if(count >= 8):
                                 Quantidade de Resumos publicados em am anais de congressos, ano do primeiro e do último,
                                 Quantidade de Apresentação de trabalhos, ano do primeiro e do último
 
-                                    9(feito porem nao consegui achar algumas informações como as tags dos programas de computador e programa de patente)
+                                    9(feito porem nao consegui achar algumas informações como as 
+                                    tags dos programas de computador e programa de patente)
 
                                     Gerar outro arquivo .csv com identificador do currículo, o nome do indivíduo, e estes campos:
                                     Total de Programas de computador sem registro (ano do primeiro e último),
@@ -546,7 +542,6 @@ if(count >= 8):
 
 link github: https://github.com/ImArthz/Lattes_CV_Extractor
 '''
-
 
 
 
