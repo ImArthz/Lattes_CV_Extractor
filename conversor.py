@@ -6,7 +6,7 @@ import webbrowser # Importa a biblioteca para abrir navegadores web
 import pathlib #importa biblioteca para lidar com path de arquivos
 
 
-pasta_raiz = r'C:\Users\aluno\Desktop\base de dados Não excluir\Conversor\Base de Testes'  # Define a pasta raiz onde os arquivos serão pesquisados
+pasta_raiz = r'C:\Users\Arthur\Desktop\pyp\collectionn'  # Define a pasta raiz onde os arquivos serão pesquisados
 linkpadrao = None
 arquivo_csv = "dadoszip.csv"  # Define o nome do arquivo CSV que será criado
 arquivo2_csv = "informacoes.csv"  # Define o nome do segundo arquivo CSV que será criado
@@ -229,18 +229,19 @@ def arquivo2():
     
         print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo2_csv}'.")
 def arquivo3():
-
     print(f"Iniciando extração para {arquivo3_csv} ... ")
+
     # Abre o arquivo CSV 'arquivo3_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
     with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
-        writer.writerow(['Número Identificador', 'Nome', 'Idioma', 'Proficiência de Compreensão', 'Proficiência de Fala', 'Proficiência de Leitura', 'Proficiência de Escrita'])
+        writer.writerow(['Número Identificador', 'Nome', 'Idioma'])
+
         # Repete o processo de pesquisa de arquivos ZIP, extração de arquivos XML e processamento dos XMLs para gerar informações sobre idiomas
         for pasta, subpastas, arquivos in os.walk(pasta_raiz):
             for arquivo in arquivos:
                 if arquivo.endswith(".zip"):  # Verifica se o arquivo possui a extensão ".zip"
                     arquivo_zip = os.path.join(pasta, arquivo)  # Caminho completo para o arquivo ZIP
-    
+
                     # Abre o arquivo ZIP e itera sobre as entradas do arquivo
                     with zipfile.ZipFile(arquivo_zip, 'r') as zf:
                         for entry in zf.infolist():
@@ -248,25 +249,14 @@ def arquivo3():
                                 xml_file = zf.extract(entry, path=pasta)  # Extrai o arquivo XML para a pasta atual
                                 tree = ET.parse(xml_file)  # Faz o parse do arquivo XML
                                 root = tree.getroot()  # Obtém o elemento raiz do XML
-                                numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR")  # Obtém o número identificador do elemento raiz
-                                nome_individuo = root.find('DADOS-GERAIS').attrib['NOME-COMPLETO']  # Obtém o nome do indivíduo
-    
-                                idiomas = root.findall("./DADOS-GERAIS/IDIOMAS/IDIOMA")  # Obtém os idiomas
-    
-                                idiomas_lista = []
-                                for idioma in idiomas:
-                                    # Obtém informações sobre cada idioma, como nome do idioma, proficiência de compreensão, proficiência de fala, proficiência de leitura e proficiência de escrita
-                                    nome_idioma = get_attrib_value(idioma, 'DESCRICAO-DO-IDIOMA')
-                                    proficiencia_compreensao = get_attrib_value(idioma, 'PROFICIENCIA-DE-COMPREENSAO')
-                                    proficiencia_fala = get_attrib_value(idioma, 'PROFICIENCIA-DE-FALA')
-                                    proficiencia_leitura = get_attrib_value(idioma, 'PROFICIENCIA-DE-LEITURA')
-                                    proficiencia_escrita = get_attrib_value(idioma, 'PROFICIENCIA-DE-ESCRITA')
-    
-                                    idiomas_lista.append([nome_idioma, proficiencia_compreensao, proficiencia_fala, proficiencia_leitura, proficiencia_escrita])
-    
+                                numero_identificador = root.attrib.get("NUMERO-IDENTIFICADOR", 'NAO_INFORMADO')  # Obtém o número identificador do elemento raiz
+                                nome_individuo = root.find('DADOS-GERAIS').attrib.get('NOME-COMPLETO', 'NAO_INFORMADO')  # Obtém o nome do indivíduo
+                                area_idioma = [area.get('DESCRICAO-DO-IDIOMA') for area in root.findall("./DADOS-GERAIS/IDIOMAS/IDIOMA")]
+                                area_idioma = [area for area in area_idioma if area is not None]# Filtrar os valores None
                                 # Escreve uma linha com as informações sobre idiomas no arquivo CSV
-                                writer.writerow([numero_identificador, nome_individuo] + sum(idiomas_lista, []))
-    
+                                
+                                writer.writerow([numero_identificador, nome_individuo,', ' .join(area_idioma)])
+
         print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo3_csv}'.")
 def arquivo4():
     print(f"Iniciando extração para {arquivo4_csv} ... ")
@@ -563,7 +553,7 @@ while not saida:
         arquivo7()
         arquivo8()
     elif escolha ==10:
-        print(definir_path_pasta())10
+        print(definir_path_pasta())
 
     elif escolha == 11:
         abrir_repositorio_github()
