@@ -3,8 +3,10 @@ import csv  # Importa a biblioteca csv para manipular arquivos CSV
 import os  # Importa a biblioteca os para operações de sistema
 import zipfile  # Importa a biblioteca zipfile para trabalhar com arquivos ZIP
 import webbrowser # Importa a biblioteca para abrir navegadores web
+import pathlib #importa biblioteca para lidar com path de arquivos
 
-pasta_raiz = r'C:\Users\Arthur\Desktop\pyp\collectionn'  # Define a pasta raiz onde os arquivos serão pesquisados
+
+pasta_raiz = r'C:\Users\aluno\Desktop\base de dados Não excluir\Conversor\Base de Testes'  # Define a pasta raiz onde os arquivos serão pesquisados
 linkpadrao = None
 arquivo_csv = "dadoszip.csv"  # Define o nome do arquivo CSV que será criado
 arquivo2_csv = "informacoes.csv"  # Define o nome do segundo arquivo CSV que será criado
@@ -14,7 +16,8 @@ arquivo5_csv = "publicacoes.csv"  # Define o nome do quinto arquivo CSV que ser�
 arquivo6_csv ="produção tecnica.csv" #Define o nome do sexto arquivo csv que será criado 
 arquivo7_csv = "bancas doutorado & mestrado.csv"#Define o nome do setimo arquivo csv que será criado
 arquivo8_csv ="orientações em andamento.csv"#Define o nome do oitavo arquivo csv que será criado
-count = 0
+
+
 
 print(f"Iniciando o programa ...")
 def abrir_repositorio_github():
@@ -23,23 +26,26 @@ def abrir_repositorio_github():
     print(f"Repositório do GitHub aberto: {url}")
 def definir_path_pasta():
     saida = False
+    pasta_raiz = None
+
     while not saida:
-        print("Modelo de pathing : \n")
-        link = input("Cole o pathing da base de dados aqui : \n")
-        linkpadrao = link
-        escolha = input(f"Você digitou{link} Está correto ? (S/N)").lower()
-        if escolha in ('nao', 'n', 'não','no'):
+        print("Modelo de pathing:\n")
+        link = input("Cole o pathing da base de dados aqui:\n")
+        escolha = input(f"Você digitou {link}. Está correto? (S/N)").lower()
+
+        if escolha in ('nao', 'n', 'não', 'no'):
             continue  # Volte ao início do loop
-        elif escolha in ('sim','s','si'):
-            try:
-                pasta_raiz = Path(linkpadrao)
-                pasta_raiz.is_dir()
+        elif escolha in ('sim', 's', 'si'):
+            if os.path.exists(link) and os.path.isdir(link):
+                pasta_raiz = link
                 saida = True
-            except OSError:
-                print(f"O caminho '{linkpadrao}' não é um diretório válido.")
+            else:
+                print(f"O caminho '{link}' não é um diretório válido.")
         else:
-            print(f"{escolha}não é uma escolha valida por favor selecione sim ou não ")
+            print(f"{escolha} não é uma escolha válida. Por favor, selecione sim ou não.")
+
     return pasta_raiz
+    
     
 def obter_ano(elemento):
     if elemento is not None:
@@ -223,7 +229,8 @@ def arquivo2():
     
         print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo2_csv}'.")
 def arquivo3():
-   print(f"Iniciando extração para {arquivo3_csv} ... ")
+
+    print(f"Iniciando extração para {arquivo3_csv} ... ")
     # Abre o arquivo CSV 'arquivo3_csv' em modo de escrita e cria um objeto writer para escrever linhas no arquivo
     with open(arquivo3_csv, 'w', encoding='utf-8', newline='') as file:
         writer = csv.writer(file)
@@ -497,6 +504,7 @@ def arquivo8():
                                 writer.writerow(row_data)
         print(f"Os dados foram convertidos e armazenados no arquivo '{arquivo8_csv}'.")
 saida = False
+
 while not saida:
     print("--------------Menu-----------------\n")
     print("1- extrair e converter dados do Arquivo-1")
@@ -513,7 +521,7 @@ while not saida:
     print("-----------------------------------\n")
     try:
         escolha = int(input("Digite o numero da opcao desejada: \n->"))
-        if escolha not in range(1, 11):
+        if escolha not in range(1, 13):
             raise ValueError("Opção inválida")
     except ValueError as e:
         print(f"Erro: {e}")
@@ -555,11 +563,11 @@ while not saida:
         arquivo7()
         arquivo8()
     elif escolha ==10:
-        definir_path_pasta()
+        print(definir_path_pasta())10
+
     elif escolha == 11:
         abrir_repositorio_github()
         saida = True
-        
 
 
 
