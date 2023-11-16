@@ -19,3 +19,39 @@ Para utilizar o Lattes CV Extractor, siga as etapas abaixo:
 ## Contribuindo
 
 Contribuições são sempre bem-vindas! Se você tiver alguma sugestão ou correção, sinta-se à vontade para abrir uma issue ou enviar um pull request.
+
+## Gráficos
+
+**Gráfico de idiomas**
+
+Este gráfico mostra a distribuição de idiomas falados pelos pesquisadores.
+
+[![Gráfico de idiomas](grafico_idiomas.png)](grafico_idiomas.png)
+
+**Gráfico de quantidade de especializações**
+
+Este gráfico mostra a quantidade de especializações realizadas pelos pesquisadores.
+
+[![Gráfico de quantidade de especializações](quantidade_especializacoes.png)](quantidade_especializacoes.png)
+
+**Gráfico de top cidades de pesquisadores**
+
+Este gráfico mostra as cidades com mais pesquisadores.
+
+[![Gráfico de top cidades de pesquisadores](top_cidades_pesquisadores.png)](top_cidades_pesquisadores.png)
+
+**Gráfico de wordcloud de áreas de atuação**
+
+Este gráfico mostra as áreas de atuação dos pesquisadores.
+
+[![Gráfico de wordcloud de áreas de atuação](wordcloud_areas_atuacao.png)](wordcloud_areas_atuacao.png)
+
+**Gráfico de wordcloud de linhas de pesquisa**
+
+Este gráfico mostra as linhas de pesquisa dos pesquisadores.
+
+[![Gráfico de wordcloud de linhas de pesquisa](wordcloud_linhas_pesquisa.png)](wordcloud_linhas_pesquisa.png)
+
+## Contribuindo
+
+Contribuições são sempre bem-vindas! Se você tiver alguma sugestão ou correção, sinta-se à vontade para abrir uma issue ou enviar um pull request.
